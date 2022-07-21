@@ -6,7 +6,7 @@
 	export const load = async () => {
 		// const client = new GraphQLClient(import.meta.env.VITE_GRAPHQL_API);
 
-		const query = gql`
+		const postQuery = gql`
 			query GetPosts {
 				posts {
 					title
@@ -26,18 +26,53 @@
 			}
 		`;
 
-		const { posts } = await client.request(query);
+		const portfolioQuery = gql`
+			query GetPortfolios {
+				portfolios(first: 3, orderBy: date_DESC) {
+					title
+					tags
+					slug
+					description
+					date
+					coverImage {
+						url
+						width
+						height
+					}
+				}
+			}
+		`;
+
+		const { posts } = await client.request(postQuery);
+		const { portfolios } = await client.request(portfolioQuery);
 
 		return {
 			props: {
-				posts
+				posts,
+				portfolios
 			}
 		};
 	};
 </script>
 
 <script>
+	import { toggle_class } from 'svelte/internal';
+
 	export let posts;
+	export let portfolios;
 </script>
 
-<pre>{JSON.stringify(posts, null, 2)}</pre>
+<!-- <pre>{JSON.stringify(posts, null, 2)}</pre> -->
+<div>
+	{#each posts as { title, slug, description, date, tags, author }}
+		<p>{title} by, {author[0].name}</p>
+	{/each}
+</div>
+
+<br />
+
+<div>
+	{#each portfolios as { title, tags, slug, description, date, coverimage }}
+		<p>{title}: in categories: {tags}</p>
+	{/each}
+</div>
