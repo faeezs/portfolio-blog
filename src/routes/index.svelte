@@ -1,2 +1,43 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script context="module">
+	import { client } from '$lib/graphql-client';
+	// import { gql, GraphQLClient } from 'graphql-request';
+	import { gql } from 'graphql-request';
+
+	export const load = async () => {
+		// const client = new GraphQLClient(import.meta.env.VITE_GRAPHQL_API);
+
+		const query = gql`
+			query GetPosts {
+				posts {
+					title
+					slug
+					description
+					date
+					tags
+					author {
+						name
+						image {
+							url
+							width
+							height
+						}
+					}
+				}
+			}
+		`;
+
+		const { posts } = await client.request(query);
+
+		return {
+			props: {
+				posts
+			}
+		};
+	};
+</script>
+
+<script>
+	export let posts;
+</script>
+
+<pre>{JSON.stringify(posts, null, 2)}</pre>
