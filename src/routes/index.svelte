@@ -2,77 +2,46 @@
 	import { client } from '$lib/graphql-client';
 	// import { gql, GraphQLClient } from 'graphql-request';
 	import { gql } from 'graphql-request';
+	import { postsQuery, portfolioQuery } from '$lib/graphql-queries';
 
 	export const load = async () => {
-		// const client = new GraphQLClient(import.meta.env.VITE_GRAPHQL_API);
+		const [postsReq, projectsReq] = await Promise.all([
+			client.request(postsQuery),
+			client.request(portfolioQuery)
+		]);
 
-		const postQuery = gql`
-			query GetPosts {
-				posts {
-					title
-					slug
-					description
-					date
-					tags
-					author {
-						name
-						image {
-							url
-							width
-							height
-						}
-					}
-				}
-			}
-		`;
-
-		const portfolioQuery = gql`
-			query GetPortfolios {
-				portfolios(first: 3, orderBy: date_DESC) {
-					title
-					tags
-					slug
-					description
-					date
-					coverImage {
-						url
-						width
-						height
-					}
-				}
-			}
-		`;
-
-		const { posts } = await client.request(postQuery);
-		const { portfolios } = await client.request(portfolioQuery);
+		const { posts } = postsReq;
+		const { projects } = projectsReq;
 
 		return {
 			props: {
 				posts,
-				portfolios
+				projects
 			}
 		};
 	};
 </script>
 
 <script>
-	import { toggle_class } from 'svelte/internal';
+	// import { toggle_class } from 'svelte/internal';
 
 	export let posts;
-	export let portfolios;
+	export let projects;
 </script>
 
 <!-- <pre>{JSON.stringify(posts, null, 2)}</pre> -->
 <div>
 	{#each posts as { title, slug, description, date, tags, author }}
-		<p>{title} by, {author[0].name}</p>
+		<ul>
+			<a href={`/blog/${slug}`}>{title} by, {author[0].name}</a>
+		</ul>
 	{/each}
 </div>
 
 <br />
 
 <div>
-	{#each portfolios as { title, tags, slug, description, date, coverimage }}
-		<p>{title}: in categories: {tags}</p>
+	{#each projects as { title, tags, slug, description, date, coverimage }}
+		<ul><a href={`/portfolio/${slug}`}>{title}: {date}</a></ul>
 	{/each}
 </div>
